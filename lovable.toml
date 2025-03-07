@@ -1,0 +1,11 @@
+[paths]
+base = "/frontend"
+src = "C:\\Projects\\Narcoguard\\Loveable"
+dist = "dist"
+
+[run]
+install = "npm install"
+build = "npm run build"
+test = ""
+lint = ""
+format = ""
