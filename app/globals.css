@@ -1,0 +1,218 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: 250 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 100% 60%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 40 100% 60%;
+    --accent-foreground: 0 0% 0%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 250 100% 60%;
+    --radius: 0.5rem;
+  }
+
+  .light {
+    --primary: 45 100% 60%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 100% 60%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 25 100% 60%;
+    --accent-foreground: 0 0% 0%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 45 100% 60%;
+  }
+
+  .dark {
+    --primary: 220 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 280 100% 60%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 60 100% 60%;
+    --accent-foreground: 0 0% 0%;
+    --background: 240 10% 10%;
+    --foreground: 0 0% 100%;
+    --card: 240 10% 15%;
+    --card-foreground: 0 0% 100%;
+    --border: 240 10% 20%;
+    --input: 240 10% 20%;
+    --ring: 220 100% 60%;
+  }
+
+  .ocean {
+    --primary: 200 100% 60%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 180 100% 60%;
+    --secondary-foreground: 0 0% 0%;
+    --accent: 160 100% 60%;
+    --accent-foreground: 0 0% 0%;
+    --background: 200 50% 95%;
+    --foreground: 200 50% 10%;
+    --card: 200 50% 98%;
+    --card-foreground: 200 50% 10%;
+    --border: 200 50% 90%;
+    --input: 200 50% 90%;
+    --ring: 200 100% 60%;
+  }
+
+  .forest {
+    --primary: 120 100% 50%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 140 100% 50%;
+    --secondary-foreground: 0 0% 0%;
+    --accent: 100 100% 50%;
+    --accent-foreground: 0 0% 0%;
+    --background: 120 30% 95%;
+    --foreground: 120 30% 10%;
+    --card: 120 30% 98%;
+    --card-foreground: 120 30% 10%;
+    --border: 120 30% 90%;
+    --input: 120 30% 90%;
+    --ring: 120 100% 50%;
+  }
+
+  .sunset {
+    --primary: 20 100% 60%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 340 100% 60%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 40 100% 60%;
+    --accent-foreground: 0 0% 0%;
+    --background: 20 30% 95%;
+    --foreground: 20 30% 10%;
+    --card: 20 30% 98%;
+    --card-foreground: 20 30% 10%;
+    --border: 20 30% 90%;
+    --input: 20 30% 90%;
+    --ring: 20 100% 60%;
+  }
+
+  .custom {
+    --primary: 300 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 100% 60%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 180 100% 60%;
+    --accent-foreground: 0 0% 0%;
+    --background: 300 30% 95%;
+    --foreground: 300 30% 10%;
+    --card: 300 30% 98%;
+    --card-foreground: 300 30% 10%;
+    --border: 300 30% 90%;
+    --input: 300 30% 90%;
+    --ring: 300 100% 60%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Glass effect */
+  .glass-card {
+    @apply bg-white/15 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+
+  .dark .glass-card {
+    @apply bg-black/15 border-white/10;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r;
+  }
+
+  .gradient-text-primary {
+    @apply gradient-text from-primary via-secondary to-accent;
+  }
+
+  /* Enhanced buttons */
+  .btn-glow {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+}
+
+@layer utilities {
+  /* Custom animations */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spin 3s linear infinite;
+  }
+
+  .animate-spin-slower {
+    animation: spin 5s linear infinite;
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+}
+
+/* Custom animations that can't be directly included in Tailwind */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px 0 rgba(var(--primary), 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px 5px rgba(var(--primary), 0.7);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(var(--background), 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--primary), 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--primary), 0.8);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .glass-card {
+    backdrop-filter: blur(5px);
+  }
+}
