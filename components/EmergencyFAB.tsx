@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Phone, X, MessageCircle, AlertTriangle } from "lucide-react"
+import { X, MessageCircle, AlertTriangle } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
+import Image from "next/image"
 
 export default function EmergencyFAB() {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -98,14 +99,15 @@ export default function EmergencyFAB() {
           {isExpanded ? (
             <X className="w-6 h-6" />
           ) : (
-            <>
-              <Phone className="w-6 h-6" />
-              <motion.span
-                className="absolute top-0 right-0 h-3 w-3 bg-white rounded-full"
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Number.POSITIVE_INFINITY, duration: 2 }}
+            <div className="relative">
+              <Image
+                src="/images/narcoguard-icon.png"
+                alt="Narcoguard"
+                width={28}
+                height={28}
+                className="rounded-full"
               />
-            </>
+            </div>
           )}
           <span className="sr-only">{isExpanded ? "Close Emergency Menu" : "Open Emergency Menu"}</span>
         </motion.button>

@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Download, Menu, X, Heart } from "lucide-react"
 import DownloadModal from "@/components/download-modal"
-// Import the Logo component
 import { Logo } from "./logo"
+import { ThemeToggle } from "./theme-toggle"
+import { AccessibilityMenu } from "./accessibility-menu"
+import { motion } from "framer-motion"
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -36,14 +38,16 @@ export default function Navbar() {
 
   return (
     <>
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      <motion.header
+        className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
           isScrolled ? "bg-background/80 backdrop-blur-md shadow-sm" : "bg-transparent"
         }`}
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.3 }}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            {/* Replace the existing logo/brand section with: */}
             <Link href="/" className="flex items-center">
               <Logo size="md" className="mr-6" isLink={false} />
             </Link>
@@ -53,16 +57,25 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors relative ${
                     pathname === link.href ? "text-primary" : "text-foreground/80 hover:text-primary hover:bg-muted"
                   }`}
                 >
                   {link.label}
+                  {pathname === link.href && (
+                    <motion.div
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                      layoutId="navbar-indicator"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
                 </Link>
               ))}
             </nav>
 
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-2">
+              <AccessibilityMenu />
+              <ThemeToggle />
               <Button variant="outline" asChild className="text-red-500 border-red-500 hover:bg-red-500/10">
                 <Link href="/donate">
                   <Heart className="mr-2 h-4 w-4" />
@@ -108,6 +121,11 @@ export default function Navbar() {
                     ))}
                   </nav>
 
+                  <div className="mt-6 flex items-center justify-center space-x-4">
+                    <AccessibilityMenu />
+                    <ThemeToggle />
+                  </div>
+
                   <div className="mt-auto pt-6 space-y-4">
                     <Button className="w-full" variant="outline" asChild onClick={() => setIsMobileMenuOpen(false)}>
                       <Link href="/donate">
@@ -135,7 +153,7 @@ export default function Navbar() {
             </Sheet>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Spacer for fixed header */}
       <div className="h-16"></div>

@@ -6,13 +6,18 @@ const nextConfig = {
   images: {
     domains: ["narcoguard.com"],
     formats: ["image/avif", "image/webp"],
-    unoptimized: true,
+    // Enable image optimization for better performance
+    // Only disable this if you have specific deployment constraints
+    unoptimized: process.env.NODE_ENV === "development",
+    // Add reasonable image size limits
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
+  // Remove experimental features that are now standard or conflicting
   experimental: {
     optimizeFonts: true,
-    optimizeImages: true,
-    optimizeCss: true,
-    serverComponents: true,
+    // Remove optimizeImages as it conflicts with images.unoptimized
+    // Remove serverComponents as it's now standard
   },
   headers: async () => {
     return [
@@ -48,11 +53,25 @@ const nextConfig = {
     ]
   },
   poweredByHeader: false,
+  // For production, consider enabling ESLint and TypeScript checks
+  // For temporary deployment fixes, keep these settings
   eslint: {
-    ignoreDuringBuilds: true,
+    // Consider changing to false for production to catch issues
+    ignoreDuringBuilds: process.env.NODE_ENV === "production" ? true : false,
+    // Optional: Add dirs to exclude certain directories
+    // dirs: ['pages', 'components', 'lib', 'utils'],
   },
   typescript: {
-    ignoreBuildErrors: true,
+    // Consider changing to false for production to catch issues
+    ignoreBuildErrors: process.env.NODE_ENV === "production" ? true : false,
+  },
+  // Add output configuration for better build output
+  output: "standalone",
+  // Add compiler options for better performance
+  compiler: {
+    // Enable React Server Components
+    reactRemoveProperties: process.env.NODE_ENV === "production",
+    removeConsole: process.env.NODE_ENV === "production",
   },
 }
 

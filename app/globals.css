@@ -24,6 +24,12 @@
     --input: 240 5.9% 90%;
     --ring: 270 95% 56%; /* Narcoguard purple */
     --radius: 0.5rem;
+
+    /* Narcoguard specific colors */
+    --narcoguard-purple: 270 95% 56%;
+    --narcoguard-pink: 330 81% 60%;
+    --narcoguard-blue: 210 100% 50%;
+    --narcoguard-red: 0 84.2% 60.2%;
   }
 
   .dark {
@@ -46,6 +52,183 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 270 95% 56%; /* Narcoguard purple */
+
+    /* Narcoguard specific colors */
+    --narcoguard-purple: 270 95% 56%;
+    --narcoguard-pink: 330 81% 60%;
+    --narcoguard-blue: 210 100% 50%;
+    --narcoguard-red: 0 84.2% 60.2%;
+  }
+
+  /* Ocean theme */
+  .ocean {
+    --background: 210 50% 98%;
+    --foreground: 210 50% 10%;
+    --card: 210 50% 98%;
+    --card-foreground: 210 50% 10%;
+    --popover: 210 50% 98%;
+    --popover-foreground: 210 50% 10%;
+    --primary: 210 100% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 210 40% 90%;
+    --secondary-foreground: 210 40% 10%;
+    --muted: 210 40% 90%;
+    --muted-foreground: 210 40% 40%;
+    --accent: 210 100% 40%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 40% 90%;
+    --input: 210 40% 90%;
+    --ring: 210 100% 50%;
+
+    /* Narcoguard specific colors */
+    --narcoguard-purple: 210 100% 50%;
+    --narcoguard-pink: 210 100% 40%;
+    --narcoguard-blue: 210 100% 60%;
+    --narcoguard-red: 0 100% 50%;
+  }
+
+  .dark.ocean {
+    --background: 210 50% 10%;
+    --foreground: 210 50% 98%;
+    --card: 210 50% 10%;
+    --card-foreground: 210 50% 98%;
+    --popover: 210 50% 10%;
+    --popover-foreground: 210 50% 98%;
+    --primary: 210 100% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 210 40% 20%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 210 40% 20%;
+    --muted-foreground: 210 40% 70%;
+    --accent: 210 100% 40%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 40% 20%;
+    --input: 210 40% 20%;
+    --ring: 210 100% 50%;
+
+    /* Narcoguard specific colors */
+    --narcoguard-purple: 210 100% 50%;
+    --narcoguard-pink: 210 100% 40%;
+    --narcoguard-blue: 210 100% 60%;
+    --narcoguard-red: 0 100% 50%;
+  }
+
+  /* Forest theme */
+  .forest {
+    --background: 120 50% 98%;
+    --foreground: 120 50% 10%;
+    --card: 120 50% 98%;
+    --card-foreground: 120 50% 10%;
+    --popover: 120 50% 98%;
+    --popover-foreground: 120 50% 10%;
+    --primary: 142 72% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 120 40% 90%;
+    --secondary-foreground: 120 40% 10%;
+    --muted: 120 40% 90%;
+    --muted-foreground: 120 40% 40%;
+    --accent: 142 72% 40%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 120 40% 90%;
+    --input: 120 40% 90%;
+    --ring: 142 72% 50%;
+
+    /* Narcoguard specific colors */
+    --narcoguard-purple: 142 72% 50%;
+    --narcoguard-pink: 142 72% 40%;
+    --narcoguard-blue: 142 72% 60%;
+    --narcoguard-red: 0 100% 50%;
+  }
+
+  .dark.forest {
+    --background: 120 50% 10%;
+    --foreground: 120 50% 98%;
+    --card: 120 50% 10%;
+    --card-foreground: 120 50% 98%;
+    --popover: 120 50% 10%;
+    --popover-foreground: 120 50% 98%;
+    --primary: 142 72% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 120 40% 20%;
+    --secondary-foreground: 120 40% 98%;
+    --muted: 120 40% 20%;
+    --muted-foreground: 120 40% 70%;
+    --accent: 142 72% 40%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 120 40% 20%;
+    --input: 120 40% 20%;
+    --ring: 142 72% 50%;
+
+    /* Narcoguard specific colors */
+    --narcoguard-purple: 142 72% 50%;
+    --narcoguard-pink: 142 72% 40%;
+    --narcoguard-blue: 142 72% 60%;
+    --narcoguard-red: 0 100% 50%;
+  }
+
+  /* Sunset theme */
+  .sunset {
+    --background: 30 50% 98%;
+    --foreground: 30 50% 10%;
+    --card: 30 50% 98%;
+    --card-foreground: 30 50% 10%;
+    --popover: 30 50% 98%;
+    --popover-foreground: 30 50% 10%;
+    --primary: 30 100% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 30 40% 90%;
+    --secondary-foreground: 30 40% 10%;
+    --muted: 30 40% 90%;
+    --muted-foreground: 30 40% 40%;
+    --accent: 30 100% 40%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 30 40% 90%;
+    --input: 30 40% 90%;
+    --ring: 30 100% 50%;
+
+    /* Narcoguard specific colors */
+    --narcoguard-purple: 30 100% 50%;
+    --narcoguard-pink: 30 100% 40%;
+    --narcoguard-blue: 30 100% 60%;
+    --narcoguard-red: 0 100% 50%;
+  }
+
+  .dark.sunset {
+    --background: 30 50% 10%;
+    --foreground: 30 50% 98%;
+    --card: 30 50% 10%;
+    --card-foreground: 30 50% 98%;
+    --popover: 30 50% 10%;
+    --popover-foreground: 30 50% 98%;
+    --primary: 30 100% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 30 40% 20%;
+    --secondary-foreground: 30 40% 98%;
+    --muted: 30 40% 20%;
+    --muted-foreground: 30 40% 70%;
+    --accent: 30 100% 40%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 30 40% 20%;
+    --input: 30 40% 20%;
+    --ring: 30 100% 50%;
+
+    /* Narcoguard specific colors */
+    --narcoguard-purple: 30 100% 50%;
+    --narcoguard-pink: 30 100% 40%;
+    --narcoguard-blue: 30 100% 60%;
+    --narcoguard-red: 0 100% 50%;
   }
 }
 
@@ -55,6 +238,82 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  /* Gradient text */
+  .gradient-text {
+    @apply text-transparent bg-clip-text;
+    background-image: linear-gradient(to right, #9333ea, #3b82f6, #ec4899);
+  }
+
+  .gradient-text-alt {
+    @apply text-transparent bg-clip-text;
+    background-image: linear-gradient(to right, #6366f1, #8b5cf6, #d946ef);
+  }
+
+  /* Dark mode specific gradients */
+  .dark .gradient-text {
+    background-image: linear-gradient(to right, #a855f7, #60a5fa, #f472b6);
+  }
+
+  .dark .gradient-text-alt {
+    background-image: linear-gradient(to right, #818cf8, #a78bfa, #e879f9);
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-background/50 backdrop-blur-md border border-white/10;
+  }
+
+  .glass-card {
+    @apply bg-background/70 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+
+  /* Gradient buttons */
+  .btn-gradient {
+    @apply relative overflow-hidden;
+    background-image: linear-gradient(to right, #9333ea, #3b82f6);
+  }
+
+  .btn-gradient::before {
+    content: "";
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background-image: linear-gradient(to right, #7e22ce, #2563eb);
+  }
+
+  .btn-gradient:hover::before {
+    @apply opacity-100;
+  }
+
+  .btn-gradient-alt {
+    @apply relative overflow-hidden;
+    background-image: linear-gradient(to right, #6366f1, #d946ef);
+  }
+
+  .btn-gradient-alt::before {
+    content: "";
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background-image: linear-gradient(to right, #4f46e5, #c026d3);
+  }
+
+  .btn-gradient-alt:hover::before {
+    @apply opacity-100;
+  }
+
+  /* No Sign Icon Styles */
+  .no-sign-container {
+    @apply relative inline-block;
+  }
+
+  .no-sign-image {
+    @apply rounded-full object-cover;
+  }
+
+  .no-sign-overlay {
+    @apply absolute inset-0;
   }
 }
 
@@ -63,22 +322,66 @@
   animation: float 6s ease-in-out infinite;
 }
 
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
 .animate-pulse-glow {
   animation: pulse-glow 3s ease-in-out infinite;
 }
 
-/* Gradient text */
-.gradient-text {
-  @apply text-transparent bg-clip-text bg-gradient-to-r from-narcoguard-purple via-narcoguard-blue to-narcoguard-pink;
+@keyframes pulse-glow {
+  0% {
+    opacity: 0.5;
+    filter: blur(10px);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(15px);
+  }
+  100% {
+    opacity: 0.5;
+    filter: blur(10px);
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.reduce-motion *,
+.reduce-motion ::before,
+.reduce-motion ::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-muted;
+  @apply bg-muted rounded-full;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -87,4 +390,59 @@
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-primary;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary) / 0.5) hsl(var(--muted));
+}
+
+/* Page transitions */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* Focus styles for better accessibility */
+.focus-visible:focus-visible {
+  @apply outline-none ring-2 ring-offset-2 ring-primary;
+}
+
+/* Skip to content link for keyboard users */
+.skip-to-content {
+  @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .print-break-inside-avoid {
+    break-inside: avoid;
+  }
 }
