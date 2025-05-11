@@ -1,57 +1,84 @@
 "use client"
 
 import { useEffect } from "react"
+import { reportPerformanceMetrics } from "@/lib/performance-monitoring"
 
 export default function PerformanceMetrics() {
   useEffect(() => {
     // Only run in production
     if (process.env.NODE_ENV !== "production") return
 
-    // Report Web Vitals
-    const reportWebVitals = async (metric) => {
-      const { name, value, id } = metric
-
-      // Log to console in development
-      console.log(`Web Vital: ${name}`, value)
-
-      // In production, send to analytics
+    // Set up Core Web Vitals reporting
+    const setupWebVitalsReporting = async () => {
       try {
-        await fetch("/api/metrics", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, value, id }),
-        })
+        const { onCLS, onFID, onLCP } = await import("web-vitals")
+
+        const reportWebVital = ({ name, value, id }) => {
+          // Log to console in development
+          if (process.env.NODE_ENV === "development") {
+            console.log(`Web Vital: ${name}`, value)
+          }
+
+          // Send to analytics endpoint
+          reportPerformanceMetrics(
+            {
+              name,
+              value,
+              id,
+              path: window.location.pathname,
+            },
+            "/api/metrics",
+          )
+        }
+
+        // Register metrics
+        onCLS(reportWebVital)
+        onFID(reportWebVital)
+        onLCP(reportWebVital)
       } catch (error) {
-        console.error("Failed to report web vital:", error)
+        console.error("Failed to load web-vitals:", error)
       }
     }
 
-    // Register performance observer
+    setupWebVitalsReporting()
+
+    // Register performance observer for additional metrics
     if ("PerformanceObserver" in window) {
-      // Core Web Vitals
-      const coreWebVitalsObserver = new PerformanceObserver((entryList) => {
-        entryList.getEntries().forEach((entry) => {
-          // @ts-ignore - LCP, FID, and CLS are not in the PerformanceEntry type
-          const metric = { name: entry.name, value: entry.value, id: entry.id }
-          reportWebVitals(metric)
+      try {
+        // Resource timing
+        const resourceObserver = new PerformanceObserver((entryList) => {
+          const entries = entryList.getEntries()
+          // Only report significant resources (e.g., large images, scripts, etc.)
+          const significantEntries = entries
+            .filter(
+              (entry) =>
+                entry.duration > 100 || // Long loading resources
+                entry.initiatorType === "script" ||
+                entry.initiatorType === "css",
+            )
+            .slice(0, 5) // Limit to 5 entries per batch
+
+          if (significantEntries.length > 0) {
+            reportPerformanceMetrics({
+              type: "resource-timing",
+              resources: significantEntries.map((entry) => ({
+                name: entry.name.split("/").pop(),
+                duration: entry.duration,
+                size: entry.transferSize || 0,
+                type: entry.initiatorType,
+              })),
+            })
+          }
         })
-      })
 
-      coreWebVitalsObserver.observe({ type: "largest-contentful-paint", buffered: true })
-      coreWebVitalsObserver.observe({ type: "first-input", buffered: true })
-      coreWebVitalsObserver.observe({ type: "layout-shift", buffered: true })
+        resourceObserver.observe({ type: "resource", buffered: true })
 
-      // Navigation timing
-      const navigationObserver = new PerformanceObserver((entryList) => {
-        const navigationEntry = entryList.getEntriesByType("navigation")[0]
-        if (navigationEntry) {
-          // @ts-ignore - navigationEntry properties
-          const loadTime = navigationEntry.loadEventEnd - navigationEntry.startTime
-          reportWebVitals({ name: "page-load", value: loadTime, id: "nav-timing" })
+        return () => {
+          resourceObserver.disconnect()
         }
-      })
-
-      navigationObserver.observe({ type: "navigation", buffered: true })
+      } catch (error) {
+        console.error("Performance observer error:", error)
+      }
     }
   }, [])
 

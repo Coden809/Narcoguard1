@@ -55,9 +55,9 @@ const config = {
         },
         // Custom Narcoguard colors based on the new image
         narcoguard: {
-          purple: "#9333EA", // Vibrant purple from the image
-          blue: "#38BDF8", // Bright blue from the image
-          pink: "#EC4899", // Pink from the image
+          purple: "hsl(var(--narcoguard-purple))",
+          blue: "hsl(var(--narcoguard-blue))",
+          pink: "hsl(var(--narcoguard-pink))",
           orange: "#F97316", // Orange from the image
           yellow: "#FACC15", // Yellow from the image
         },
@@ -94,6 +94,10 @@ const config = {
         "accordion-up": "accordion-up 0.2s ease-out",
         float: "float 6s ease-in-out infinite",
         "pulse-glow": "pulse-glow 3s ease-in-out infinite",
+      },
+      transitionDuration: {
+        "0": "0ms",
+        "2000": "2000ms",
       },
     },
   },

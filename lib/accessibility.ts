@@ -1,39 +1,171 @@
 /**
- * Accessibility utilities for Narcoguard application
+ * Comprehensive accessibility utilities for Narcoguard application
+ * This module provides tools and helpers to ensure the application
+ * is accessible to users with disabilities.
  */
 
-// Focus trap for modals and dialogs
-export function createFocusTrap(element: HTMLElement): {
+// Types for accessibility preferences
+export interface AccessibilityPreferences {
+  reduceMotion: boolean
+  highContrast: boolean
+  largeText: boolean
+  screenReader: boolean
+  keyboardNavigation: boolean
+  colorBlindMode: ColorBlindMode
+  focusIndicators: boolean
+  animations: boolean
+}
+
+export enum ColorBlindMode {
+  NONE = "none",
+  PROTANOPIA = "protanopia",
+  DEUTERANOPIA = "deuteranopia",
+  TRITANOPIA = "tritanopia",
+  ACHROMATOPSIA = "achromatopsia",
+}
+
+// Default accessibility preferences
+export const defaultAccessibilityPreferences: AccessibilityPreferences = {
+  reduceMotion: false,
+  highContrast: false,
+  largeText: false,
+  screenReader: false,
+  keyboardNavigation: true,
+  colorBlindMode: ColorBlindMode.NONE,
+  focusIndicators: true,
+  animations: true,
+}
+
+// Detect system accessibility preferences
+export function detectSystemAccessibilityPreferences(): Partial<AccessibilityPreferences> {
+  if (typeof window === "undefined") return {}
+
+  const preferences: Partial<AccessibilityPreferences> = {}
+
+  // Detect reduced motion preference
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    preferences.reduceMotion = true
+    preferences.animations = false
+  }
+
+  // Detect contrast preference
+  if (window.matchMedia("(prefers-contrast: more)").matches) {
+    preferences.highContrast = true
+  }
+
+  // Detect larger text preference
+  if (
+    window.matchMedia("(prefers-reduced-transparency: reduce)").matches ||
+    window.matchMedia("(prefers-contrast: more)").matches
+  ) {
+    // These are rough proxies for potential text size preferences
+    preferences.largeText = true
+  }
+
+  return preferences
+}
+
+// Apply accessibility classes to document based on preferences
+export function applyAccessibilityPreferences(preferences: AccessibilityPreferences): void {
+  if (typeof document === "undefined") return
+
+  // Apply or remove classes based on preferences
+  document.documentElement.classList.toggle("reduce-motion", preferences.reduceMotion)
+  document.documentElement.classList.toggle("high-contrast", preferences.highContrast)
+  document.documentElement.classList.toggle("large-text", preferences.largeText)
+  document.documentElement.classList.toggle("screen-reader-mode", preferences.screenReader)
+  document.documentElement.classList.toggle("keyboard-navigation", preferences.keyboardNavigation)
+  document.documentElement.classList.toggle("focus-visible-mode", preferences.focusIndicators)
+  document.documentElement.classList.toggle("animations-disabled", !preferences.animations)
+
+  // Remove any existing color blind mode classes
+  document.documentElement.classList.remove("protanopia", "deuteranopia", "tritanopia", "achromatopsia")
+
+  // Apply color blind mode if not NONE
+  if (preferences.colorBlindMode !== ColorBlindMode.NONE) {
+    document.documentElement.classList.add(preferences.colorBlindMode.toLowerCase())
+  }
+
+  // Set CSS variables for animation durations
+  if (preferences.reduceMotion || !preferences.animations) {
+    document.documentElement.style.setProperty("--animation-duration-factor", "0.01")
+    document.documentElement.style.setProperty("--transition-duration-factor", "0.01")
+  } else {
+    document.documentElement.style.setProperty("--animation-duration-factor", "1")
+    document.documentElement.style.setProperty("--transition-duration-factor", "1")
+  }
+
+  // Set CSS variables for text size
+  if (preferences.largeText) {
+    document.documentElement.style.setProperty("--text-size-adjust", "1.2")
+  } else {
+    document.documentElement.style.setProperty("--text-size-adjust", "1")
+  }
+}
+
+/**
+ * Narcoguard Accessibility Utilities
+ *
+ * This module provides utilities for enhancing application accessibility,
+ * including screen reader support, keyboard navigation, and focus management.
+ */
+
+// Screen reader announcement utility
+export function announceToScreenReader(message: string, priority: "polite" | "assertive" = "polite") {
+  if (typeof window === "undefined") return
+
+  // Create or get the announcement element
+  let announcementElement = document.getElementById("screen-reader-announcement")
+
+  if (!announcementElement) {
+    announcementElement = document.createElement("div")
+    announcementElement.id = "screen-reader-announcement"
+    announcementElement.setAttribute("aria-live", priority)
+    announcementElement.setAttribute("aria-atomic", "true")
+    announcementElement.classList.add("sr-only") // Screen reader only
+    document.body.appendChild(announcementElement)
+  } else {
+    // Update the aria-live attribute in case the priority changed
+    announcementElement.setAttribute("aria-live", priority)
+  }
+
+  // Set the message
+  announcementElement.textContent = message
+
+  // Clear the announcement after a delay to prevent screen readers
+  // from announcing it multiple times
+  setTimeout(() => {
+    if (announcementElement) {
+      announcementElement.textContent = ""
+    }
+  }, 3000)
+}
+
+// Focus trap utility for modals and dialogs
+export function createFocusTrap(containerElement: HTMLElement): {
   activate: () => void
   deactivate: () => void
 } {
-  let focusableElements: HTMLElement[] = []
-  let firstFocusableElement: HTMLElement | null = null
-  let lastFocusableElement: HTMLElement | null = null
-  let previousActiveElement: HTMLElement | null = null
+  if (typeof window === "undefined") return { activate: () => {}, deactivate: () => {} }
 
-  const getFocusableElements = () => {
-    const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    const elements = element.querySelectorAll(selector)
-    return Array.from(elements).filter(
-      (el) => !el.hasAttribute("disabled") && !el.getAttribute("aria-hidden"),
-    ) as HTMLElement[]
-  }
+  const focusableElements = containerElement.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+  )
 
-  const handleKeyDown = (e: KeyboardEvent) => {
+  const firstElement = focusableElements[0] as HTMLElement
+  const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
+
+  const handleTabKey = (e: KeyboardEvent) => {
     if (e.key !== "Tab") return
 
-    // If shift + tab, move focus to the last focusable element when on the first
     if (e.shiftKey) {
-      if (document.activeElement === firstFocusableElement) {
-        lastFocusableElement?.focus()
+      if (document.activeElement === firstElement) {
+        lastElement.focus()
         e.preventDefault()
       }
-    }
-    // If tab, move focus to the first focusable element when on the last
-    else {
-      if (document.activeElement === lastFocusableElement) {
-        firstFocusableElement?.focus()
+    } else {
+      if (document.activeElement === lastElement) {
+        firstElement.focus()
         e.preventDefault()
       }
     }
@@ -41,126 +173,133 @@ export function createFocusTrap(element: HTMLElement): {
 
   return {
     activate: () => {
-      previousActiveElement = document.activeElement as HTMLElement
-      focusableElements = getFocusableElements()
-      firstFocusableElement = focusableElements[0] || null
-      lastFocusableElement = focusableElements[focusableElements.length - 1] || null
-
-      // Set initial focus
-      firstFocusableElement?.focus()
-
-      // Add event listener
-      element.addEventListener("keydown", handleKeyDown)
+      containerElement.addEventListener("keydown", handleTabKey)
+      firstElement.focus()
     },
     deactivate: () => {
-      // Remove event listener
-      element.removeEventListener("keydown", handleKeyDown)
-
-      // Restore focus
-      previousActiveElement?.focus()
+      containerElement.removeEventListener("keydown", handleTabKey)
     },
   }
 }
 
-// Announce messages to screen readers
-export function announceToScreenReader(message: string, politeness: "polite" | "assertive" = "polite"): void {
-  const announcer = document.createElement("div")
-  announcer.setAttribute("aria-live", politeness)
-  announcer.setAttribute("aria-atomic", "true")
-  announcer.classList.add("sr-only")
+// Keyboard navigation utility
+export function enableKeyboardNavigation(selector: string, callback: (element: HTMLElement) => void) {
+  if (typeof window === "undefined") return () => {}
 
-  document.body.appendChild(announcer)
+  const elements = document.querySelectorAll<HTMLElement>(selector)
 
-  // Use setTimeout to ensure the DOM change is announced
-  setTimeout(() => {
-    announcer.textContent = message
-
-    // Clean up after announcement
-    setTimeout(() => {
-      document.body.removeChild(announcer)
-    }, 3000)
-  }, 100)
-}
-
-// Check contrast ratio between two colors
-export function getContrastRatio(foreground: string, background: string): number {
-  const getLuminance = (color: string): number => {
-    // Convert hex to RGB
-    let r, g, b
-
-    if (color.startsWith("#")) {
-      const hex = color.slice(1)
-      r = Number.parseInt(hex.slice(0, 2), 16) / 255
-      g = Number.parseInt(hex.slice(2, 4), 16) / 255
-      b = Number.parseInt(hex.slice(4, 6), 16) / 255
-    } else if (color.startsWith("rgb")) {
-      const match = color.match(/(\d+),\s*(\d+),\s*(\d+)/)
-      if (!match) return 0
-      r = Number.parseInt(match[1]) / 255
-      g = Number.parseInt(match[2]) / 255
-      b = Number.parseInt(match[3]) / 255
-    } else {
-      return 0
-    }
-
-    // Calculate luminance
-    const toLinear = (val: number) => {
-      return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4)
-    }
-
-    r = toLinear(r)
-    g = toLinear(g)
-    b = toLinear(b)
-
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b
-  }
-
-  const luminance1 = getLuminance(foreground)
-  const luminance2 = getLuminance(background)
-
-  const lighter = Math.max(luminance1, luminance2)
-  const darker = Math.min(luminance1, luminance2)
-
-  return (lighter + 0.05) / (darker + 0.05)
-}
-
-// Check if contrast meets WCAG standards
-export function meetsContrastStandards(
-  ratio: number,
-  level: "AA" | "AAA" = "AA",
-  size: "normal" | "large" = "normal",
-): boolean {
-  if (level === "AA") {
-    return size === "normal" ? ratio >= 4.5 : ratio >= 3
-  } else {
-    return size === "normal" ? ratio >= 7 : ratio >= 4.5
-  }
-}
-
-// Add keyboard navigation to custom components
-export function enableKeyboardNavigation(
-  element: HTMLElement,
-  selector: string,
-  callback: (el: HTMLElement) => void,
-): () => void {
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault()
-      callback(e.currentTarget as HTMLElement)
+      const target = e.target as HTMLElement
+      if (target.matches(selector)) {
+        e.preventDefault()
+        callback(target)
+      }
     }
   }
 
-  const elements = element.querySelectorAll(selector)
-  elements.forEach((el) => {
-    el.setAttribute("tabindex", "0")
-    el.setAttribute("role", "button")
-    el.addEventListener("keydown", handleKeyDown)
-  })
+  document.addEventListener("keydown", handleKeyDown)
 
-  // Return cleanup function
   return () => {
-    elements.forEach((el) => {
-      el.removeEventListener("keydown", handleKeyDown)
-    })
+    document.removeEventListener("keydown", handleKeyDown)
   }
+}
+
+// Skip to content link setup
+export function setupSkipToContentLink() {
+  if (typeof window === "undefined") return
+
+  const skipLink = document.querySelector(".skip-to-content") as HTMLAnchorElement
+  if (!skipLink) return
+
+  skipLink.addEventListener("click", (e) => {
+    e.preventDefault()
+    const target = document.querySelector("#main-content")
+    if (target) {
+      target.setAttribute("tabindex", "-1")
+      ;(target as HTMLElement).focus()
+    }
+  })
+}
+
+// High contrast mode toggle
+export function toggleHighContrastMode(enabled: boolean) {
+  if (typeof window === "undefined") return
+
+  if (enabled) {
+    document.documentElement.classList.add("high-contrast")
+  } else {
+    document.documentElement.classList.remove("high-contrast")
+  }
+
+  // Announce the change to screen readers
+  const message = enabled ? "High contrast mode enabled" : "High contrast mode disabled"
+  announceToScreenReader(message)
+}
+
+// Initialize accessibility features
+export function initializeAccessibility() {
+  if (typeof window === "undefined") return
+
+  // Add global styles for accessibility
+  const style = document.createElement("style")
+  style.textContent = `
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+    
+    .skip-to-content {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--color-primary);
+      color: white;
+      padding: 8px;
+      z-index: 100;
+      transition: top 0.2s;
+    }
+    
+    .skip-to-content:focus {
+      top: 0;
+    }
+    
+    .high-contrast {
+      --contrast-multiplier: 1.5;
+    }
+    
+    :focus {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+    
+    :focus:not(:focus-visible) {
+      outline: none;
+    }
+    
+    :focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+  `
+
+  document.head.appendChild(style)
+
+  // Setup skip to content link
+  setupSkipToContentLink()
+
+  // Add screen reader announcement element
+  const announcementElement = document.createElement("div")
+  announcementElement.id = "screen-reader-announcement"
+  announcementElement.setAttribute("aria-live", "polite")
+  announcementElement.setAttribute("aria-atomic", "true")
+  announcementElement.classList.add("sr-only")
+  document.body.appendChild(announcementElement)
 }

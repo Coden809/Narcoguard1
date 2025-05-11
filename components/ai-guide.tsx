@@ -2,26 +2,17 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { User, ChevronRight, Mic, MicOff } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { User } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { MessageList } from "./ai-guide/message-list"
+import { QuickResponses } from "./ai-guide/quick-responses"
+import { MessageInput } from "./ai-guide/message-input"
+import { useSpeechRecognition } from "./ai-guide/speech-recognition"
+import type { Message } from "./ai-guide/types"
 
-interface Message {
-  id: string
-  text: string
-  sender: "user" | "ai"
-  timestamp: Date
-}
-
-// Declare SpeechRecognition variable
-declare global {
-  interface Window {
-    webkitSpeechRecognition: any
-    SpeechRecognition: any
-  }
-}
+// Utility for generating IDs
+const generateId = () => Date.now().toString() + Math.random().toString(36).substring(2, 9)
 
 export default function AIGuide() {
   const [messages, setMessages] = useState<Message[]>([])
@@ -29,13 +20,12 @@ export default function AIGuide() {
   const [isListening, setIsListening] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
 
   // Initialize with welcome message
   useEffect(() => {
     setMessages([
       {
-        id: "1",
+        id: generateId(),
         text: "I'm Guardian AI, your personal guide to using Narcoguard. How can I help you today?",
         sender: "ai",
         timestamp: new Date(),
@@ -44,46 +34,20 @@ export default function AIGuide() {
   }, [])
 
   // Set up speech recognition
-  useEffect(() => {
-    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+  const handleTranscript = useCallback((transcript: string) => {
+    setInput(transcript)
+  }, [])
+
+  const { toggleListening, isSupported } = useSpeechRecognition(isListening, handleTranscript)
+
+  const handleToggleListening = useCallback(() => {
+    if (!isSupported) {
       console.log("Speech recognition not supported")
       return
     }
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    recognitionRef.current = new SpeechRecognition()
-
-    if (recognitionRef.current) {
-      recognitionRef.current.continuous = true
-      recognitionRef.current.interimResults = true
-
-      recognitionRef.current.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map((result) => result[0])
-          .map((result) => result.transcript)
-          .join("")
-
-        setInput(transcript)
-      }
-
-      recognitionRef.current.onerror = (event) => {
-        console.error("Speech recognition error", event.error)
-        setIsListening(false)
-      }
-
-      recognitionRef.current.onend = () => {
-        if (isListening) {
-          recognitionRef.current?.start()
-        }
-      }
-    }
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop()
-      }
-    }
-  }, [isListening])
+    setIsListening((prev) => !prev)
+    toggleListening()
+  }, [isSupported, toggleListening])
 
   // Scroll to bottom of messages
   useEffect(() => {
@@ -98,7 +62,7 @@ export default function AIGuide() {
 
     // Add user message
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: generateId(),
       text: input,
       sender: "user",
       timestamp: new Date(),
@@ -128,7 +92,7 @@ export default function AIGuide() {
 
       // Add AI response
       const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: generateId(),
         text: data.response,
         sender: "ai",
         timestamp: new Date(),
@@ -146,7 +110,7 @@ export default function AIGuide() {
 
       // Add error message
       const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: generateId(),
         text: "I'm sorry, I'm having trouble connecting. Please try again later.",
         sender: "ai",
         timestamp: new Date(),
@@ -155,21 +119,6 @@ export default function AIGuide() {
       setMessages((prev) => [...prev, errorMessage])
     } finally {
       setIsProcessing(false)
-    }
-  }
-
-  // Toggle speech recognition
-  const toggleListening = () => {
-    if (isListening) {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop()
-      }
-      setIsListening(false)
-    } else {
-      if (recognitionRef.current) {
-        recognitionRef.current.start()
-      }
-      setIsListening(true)
     }
   }
 
@@ -186,6 +135,11 @@ export default function AIGuide() {
     return defaultResponses
   }
 
+  const handleQuickResponseSelect = (response: string) => {
+    setInput(response)
+    document.getElementById("message-input")?.focus()
+  }
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -194,80 +148,20 @@ export default function AIGuide() {
           Guardian AI
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="h-96 overflow-y-auto mb-4 p-4 bg-muted/50 rounded-lg">
-          <AnimatePresence>
-            {messages.map((message) => (
-              <motion.div
-                key={message.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className={`flex mb-4 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
-                    message.sender === "user" ? "bg-primary text-primary-foreground" : "bg-card border"
-                  }`}
-                >
-                  <p>{message.text}</p>
-                  <p className="text-xs opacity-70 mt-1">
-                    {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-          <div ref={messagesEndRef} />
-        </div>
+      <CardContent className="space-y-4">
+        <MessageList messages={messages} />
+        <div ref={messagesEndRef} aria-hidden="true" />
 
-        <div className="flex flex-wrap gap-2 mb-4">
-          {getQuickResponses().map((response, index) => (
-            <Button
-              key={index}
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setInput(response)
-                document.getElementById("message-input")?.focus()
-              }}
-            >
-              {response}
-            </Button>
-          ))}
-        </div>
+        <QuickResponses responses={getQuickResponses()} onSelectResponse={handleQuickResponseSelect} />
 
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <div className="relative flex-1">
-            <input
-              id="message-input"
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask me anything..."
-              className="w-full px-4 py-2 rounded-full border border-border focus:outline-none focus:ring-2 focus:ring-primary"
-              disabled={isProcessing}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className={`absolute right-1 top-1/2 -translate-y-1/2 ${isListening ? "text-primary" : ""}`}
-              onClick={toggleListening}
-            >
-              {isListening ? <Mic className="h-5 w-5 animate-pulse" /> : <MicOff className="h-5 w-5" />}
-            </Button>
-          </div>
-
-          <Button type="submit" disabled={!input.trim() || isProcessing}>
-            {isProcessing ? (
-              <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <ChevronRight className="h-5 w-5" />
-            )}
-          </Button>
-        </form>
+        <MessageInput
+          input={input}
+          onChange={setInput}
+          onSubmit={handleSubmit}
+          isProcessing={isProcessing}
+          isListening={isListening}
+          toggleListening={handleToggleListening}
+        />
       </CardContent>
       <CardFooter className="text-xs text-muted-foreground">
         Guardian AI is designed to provide guidance on using Narcoguard. For medical emergencies, call 911.

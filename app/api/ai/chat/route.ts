@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { generateText } from "ai"
 import { openai } from "@ai-sdk/openai"
+import { rateLimit } from "@/lib/rate-limit"
 
 // Knowledge base for the AI guide
 const KNOWLEDGE_BASE = `
@@ -35,42 +36,81 @@ The Hero Network is a community of volunteers trained in overdose response who h
 Narcoguard 2 will be an upcoming smartwatch with auto-injecting naloxone technology.
 `
 
+// Create system prompt once (immutable)
+const SYSTEM_PROMPT = `
+You are Guardian AI, the helpful assistant for Narcoguard, a revolutionary app designed to prevent opioid overdose deaths.
+You are knowledgeable, compassionate, and focused on providing accurate information about Narcoguard's features and overdose prevention.
+For medical emergencies, always emphasize the importance of calling 911.
+
+Use this knowledge base to inform your responses:
+${KNOWLEDGE_BASE}
+
+Answer questions briefly and clearly. If you don't know something or if it's outside the scope of Narcoguard, acknowledge that and offer to help with something else.
+For medical advice questions, remind the user that you are not a medical professional and they should consult with healthcare providers.
+`
+
+// Create a rate limiter - 20 requests per minute
+const limiter = rateLimit({
+  interval: 60 * 1000, // 60 seconds
+  uniqueTokenPerInterval: 100, // Max 100 users per second
+  limit: 20, // 20 requests per interval
+})
+
 export async function POST(request: Request) {
+  // Extract client IP for rate limiting
+  const ip = request.headers.get("x-forwarded-for") || "anonymous"
+
   try {
+    // Apply rate limiting
+    await limiter.check(5, ip) // 5 requests per minute per IP
+
+    // Parse request body
     const { message } = await request.json()
 
     if (!message) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 })
     }
 
-    // Create system prompt
-    const systemPrompt = `
-      You are Guardian AI, the helpful assistant for Narcoguard, a revolutionary app designed to prevent opioid overdose deaths.
-      You are knowledgeable, compassionate, and focused on providing accurate information about Narcoguard's features and overdose prevention.
-      For medical emergencies, always emphasize the importance of calling 911.
-      
-      Use this knowledge base to inform your responses:
-      ${KNOWLEDGE_BASE}
-      
-      Answer questions briefly and clearly. If you don't know something or if it's outside the scope of Narcoguard, acknowledge that and offer to help with something else.
-      For medical advice questions, remind the user that you are not a medical professional and they should consult with healthcare providers.
-    `
-
-    // Generate AI response
-    const { text } = await generateText({
+    // Generate AI response with timeout handling
+    const responsePromise = generateText({
       model: openai("gpt-4o"),
       prompt: message,
-      system: systemPrompt,
+      system: SYSTEM_PROMPT,
       temperature: 0.7,
       maxTokens: 500,
     })
 
-    // Log the interaction
-    console.log(`User: ${message}\nAI: ${text}`)
+    // Set a timeout for the AI request
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("AI response timeout")), 10000)
+    })
 
-    return NextResponse.json({ response: text })
+    // Race between AI response and timeout
+    const { text } = (await Promise.race([responsePromise, timeoutPromise])) as { text: string }
+
+    // Log the interaction (sanitized)
+    console.log(
+      `User: ${message.substring(0, 100)}${message.length > 100 ? "..." : ""}\nAI: ${text.substring(0, 100)}${text.length > 100 ? "..." : ""}`,
+    )
+
+    return NextResponse.json({
+      response: text,
+      timestamp: new Date().toISOString(),
+    })
   } catch (error) {
     console.error("Error in AI chat:", error)
+
+    // Handle rate limiting errors
+    if (error.message === "Rate limit exceeded") {
+      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 })
+    }
+
+    // Handle timeout errors
+    if (error.message === "AI response timeout") {
+      return NextResponse.json({ error: "Request timed out. Please try again." }, { status: 408 })
+    }
+
+    // Handle other errors
     return NextResponse.json({ error: "Failed to process your request. Please try again." }, { status: 500 })
   }
 }

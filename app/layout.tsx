@@ -7,8 +7,10 @@ import EmergencyFAB from "@/components/EmergencyFAB"
 import { Analytics } from "@/components/analytics"
 import { Suspense } from "react"
 import Script from "next/script"
-import { applyPolyfills, provideFallbacks } from "@/lib/browser-compatibility"
+import { initBrowserCompatibility } from "@/lib/browser-compatibility"
 import AccessibilityControls from "@/components/accessibility-controls"
+import { RootErrorBoundary } from "@/components/root-error-boundary"
+import { initializeAccessibility } from "@/lib/accessibility"
 
 const inter = Inter({ subsets: ["latin"], display: "swap" })
 
@@ -62,46 +64,110 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
-        {/* Add browser compatibility script */}
+        {/* Add browser compatibility script with enhanced version */}
         <Script id="browser-compatibility" strategy="beforeInteractive">
           {`
             (function() {
-              // Apply polyfills
-              ${applyPolyfills.toString()}
-              // Provide fallbacks
-              ${provideFallbacks.toString()}
+              // Initialize browser compatibility
+              ${initBrowserCompatibility.toString()}
               
               // Execute
-              applyPolyfills();
-              provideFallbacks();
+              initBrowserCompatibility();
             })();
           `}
         </Script>
 
-        {/* Performance monitoring */}
+        {/* Initialize accessibility features */}
+        <Script id="accessibility-init" strategy="afterInteractive">
+          {`
+            (function() {
+              // Initialize accessibility features
+              ${initializeAccessibility.toString()}
+              
+              // Execute
+              if (typeof window !== 'undefined') {
+                window.addEventListener('DOMContentLoaded', function() {
+                  initializeAccessibility();
+                });
+              }
+            })();
+          `}
+        </Script>
+
+        {/* Optimize performance monitoring script */}
         <Script id="performance-monitoring" strategy="afterInteractive">
           {`
-            // Initialize performance monitoring
-            if (typeof window !== 'undefined') {
+            // Initialize performance monitoring with batching
+            if (typeof window !== 'undefined' && window.performance) {
+              // Create performance data batch for more efficient reporting
+              let perfEntries = [];
+              let reportingTimeout = null;
+              
+              const batchReportMetrics = () => {
+                if (perfEntries.length === 0) return;
+                
+                const batchData = {
+                  entries: perfEntries.slice(0, 50), // Limit batch size
+                  url: window.location.pathname,
+                  timestamp: Date.now()
+                };
+                
+                // Use sendBeacon for non-blocking reporting when available
+                if (navigator.sendBeacon) {
+                  navigator.sendBeacon('/api/metrics/batch', JSON.stringify(batchData));
+                } else {
+                  fetch('/api/metrics/batch', {
+                    method: 'POST',
+                    body: JSON.stringify(batchData),
+                    keepalive: true
+                  }).catch(e => console.error('Failed to report metrics:', e));
+                }
+                
+                // Clear the batch
+                perfEntries = [];
+              };
+              
+              // Set up batched reporting
+              const scheduleBatchReport = () => {
+                if (reportingTimeout) clearTimeout(reportingTimeout);
+                reportingTimeout = setTimeout(batchReportMetrics, 5000); // Report every 5 seconds
+              };
+              
               // Create performance observer
               if (typeof PerformanceObserver !== 'undefined') {
                 try {
                   // Create performance observer for core web vitals
                   const observer = new PerformanceObserver((list) => {
-                    list.getEntries().forEach((entry) => {
-                      // Report to analytics
-                      if (entry.entryType === 'largest-contentful-paint' ||
-                          entry.entryType === 'first-input' ||
-                          entry.entryType === 'layout-shift') {
-                        console.log('Performance metric:', entry.entryType, entry);
-                      }
-                    });
+                    const entries = list.getEntries();
+                    
+                    // Add to batch and schedule reporting
+                    if (entries.length > 0) {
+                      perfEntries.push(...entries.map(entry => ({
+                        type: entry.entryType,
+                        name: entry.name,
+                        duration: entry.duration || 0,
+                        startTime: entry.startTime || 0,
+                        id: entry.id || undefined
+                      })));
+                      
+                      scheduleBatchReport();
+                    }
                   });
                   
                   // Observe different types of performance entries
                   observer.observe({ 
                     entryTypes: ['resource', 'navigation', 'longtask', 'paint', 'layout-shift', 'largest-contentful-paint', 'first-input'] 
                   });
+                  
+                  // Report before page unload
+                  window.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'hidden') {
+                      batchReportMetrics();
+                    }
+                  });
+                  
+                  window.addEventListener('pagehide', batchReportMetrics);
+                  
                 } catch (e) {
                   console.error('Performance observer error:', e);
                 }
@@ -116,21 +182,23 @@ export default function RootLayout({
           Skip to content
         </a>
 
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          themes={["light", "dark", "ocean", "forest", "sunset", "custom"]}
-          disableTransitionOnChange={false}
-        >
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-            <main id="main-content">{children}</main>
-            <EmergencyFAB />
-            <AccessibilityControls />
-          </Suspense>
-          <Toaster />
-          <Analytics />
-        </ThemeProvider>
+        <RootErrorBoundary>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            themes={["light", "dark", "ocean", "forest", "sunset", "sky", "cosmic", "electric", "coffee", "custom"]}
+            disableTransitionOnChange={false}
+          >
+            <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+              <main id="main-content">{children}</main>
+              <EmergencyFAB />
+              <AccessibilityControls />
+            </Suspense>
+            <Toaster />
+            <Analytics />
+          </ThemeProvider>
+        </RootErrorBoundary>
       </body>
     </html>
   )

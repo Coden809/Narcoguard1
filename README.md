@@ -1,41 +1,48 @@
-# Narcoguard
+# Narcoguard - Overdose Prevention Platform
 
-Narcoguard is a comprehensive application designed to prevent overdose deaths through advanced monitoring and alert systems. The application connects users with life-saving help in critical moments.
+![Narcoguard Logo](public/images/narcoguard-icon.png)
 
-## Features
+## Overview
 
-- Real-time vital sign monitoring
-- Emergency alert system
-- Location tracking for emergency services
-- Naloxone administration guidance
-- Hero Network community support
-- Offline functionality
-- Multi-platform support (Web, iOS, Android, Desktop)
+Narcoguard is a comprehensive overdose prevention platform designed to save lives through real-time monitoring, community response, and cutting-edge technology. The application leverages wearable devices, AI-powered analysis, and a network of trained volunteers to detect and respond to potential overdose situations before they become fatal.
 
-## Tech Stack
+## Key Features
 
-- **Frontend**: Next.js, React, TypeScript, Tailwind CSS
-- **UI Components**: shadcn/ui
-- **Animations**: Framer Motion
-- **State Management**: React Context API
-- **API**: Next.js API Routes
+- **Real-time Vital Sign Monitoring**: Continuously tracks heart rate, respiratory rate, oxygen levels, and other vital signs to detect signs of overdose.
+- **Emergency Response System**: Automatically alerts emergency contacts, nearby volunteers, and emergency services when an overdose is detected.
+- **Hero Network**: A community of trained volunteers who can respond to nearby emergencies with naloxone and life-saving support.
+- **Naloxone Locator**: Helps users find the nearest available naloxone kits in their area.
+- **Medical Integration**: Connects with healthcare providers and medical records for comprehensive care.
+- **Training & Resources**: Provides educational content on overdose prevention, recognition, and response.
+- **Privacy-Focused**: Ensures user data is secure and private while still enabling life-saving interventions.
+
+## Technology Stack
+
+- **Frontend**: Next.js, React, TypeScript, Tailwind CSS, Framer Motion
+- **Backend**: Next.js API Routes, Supabase
+- **Database**: PostgreSQL (via Supabase)
 - **Authentication**: Supabase Auth
-- **Database**: Supabase PostgreSQL
+- **State Management**: React Context API, React Query
+- **Styling**: Tailwind CSS, shadcn/ui components
+- **Animations**: Framer Motion
+- **Maps & Geolocation**: Leaflet
+- **Analytics**: Custom analytics implementation
 - **Deployment**: Vercel
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18.x or higher
+- Node.js 18.x or later
 - npm or yarn
-- Git
+- Supabase account
+- Twilio account (for SMS notifications)
 
 ### Installation
 
 1. Clone the repository:
    \`\`\`bash
-   git clone https://github.com/your-username/narcoguard.git
+   git clone https://github.com/your-organization/narcoguard.git
    cd narcoguard
    \`\`\`
 
@@ -49,127 +56,143 @@ Narcoguard is a comprehensive application designed to prevent overdose deaths th
 3. Set up environment variables:
    Create a `.env.local` file in the root directory with the following variables:
    \`\`\`
+   # App
    NEXT_PUBLIC_APP_URL=http://localhost:3000
-   ANDROID_APK_PATH=/downloads/android/narcoguard.apk
-   WINDOWS_INSTALLER_PATH=/downloads/windows/narcoguard-setup.exe
-   MAC_DMG_PATH=/downloads/mac/narcoguard.dmg
-   LINUX_APPIMAGE_PATH=/downloads/linux/narcoguard.AppImage
-   JWT_SECRET=your-jwt-secret
-   TWILIO_ACCOUNT_SID=your-twilio-account-sid
-   TWILIO_AUTH_TOKEN=your-twilio-auth-token
-   TWILIO_PHONE_NUMBER=your-twilio-phone-number
-   ANALYTICS_API_URL=your-analytics-api-url
-   ANALYTICS_API_KEY=your-analytics-api-key
-   ANALYTICS_APP_ID=your-analytics-app-id
-   EMAIL_HOST=your-email-host
-   EMAIL_PORT=your-email-port
+   
+   # Supabase
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+   
+   # Authentication
+   JWT_SECRET=your_jwt_secret
+   
+   # Twilio (for SMS)
+   TWILIO_ACCOUNT_SID=your_twilio_account_sid
+   TWILIO_AUTH_TOKEN=your_twilio_auth_token
+   TWILIO_PHONE_NUMBER=your_twilio_phone_number
+   
+   # Analytics
+   ANALYTICS_API_URL=your_analytics_api_url
+   ANALYTICS_API_KEY=your_analytics_api_key
+   ANALYTICS_APP_ID=narcoguard
+   
+   # Email
+   EMAIL_HOST=your_email_host
+   EMAIL_PORT=your_email_port
    EMAIL_SECURE=true
-   EMAIL_USER=your-email-user
-   EMAIL_PASS=your-email-password
-   EMAIL_FROM=noreply@narcoguard.com
-   SUPABASE_URL=your-supabase-url
-   SUPABASE_ANON_KEY=your-supabase-anon-key
-   SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+   EMAIL_USER=your_email_user
+   EMAIL_PASS=your_email_password
+   EMAIL_FROM=noreply@narcoguard.org
+   
+   # Download paths
+   ANDROID_APK_PATH=path_to_android_apk
+   WINDOWS_INSTALLER_PATH=path_to_windows_installer
+   MAC_DMG_PATH=path_to_mac_dmg
+   LINUX_APPIMAGE_PATH=path_to_linux_appimage
    \`\`\`
 
-4. Run the development server:
+4. Set up the database:
+   \`\`\`bash
+   npm run setup-db
+   # or
+   yarn setup-db
+   \`\`\`
+
+5. Run the development server:
    \`\`\`bash
    npm run dev
    # or
    yarn dev
    \`\`\`
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+6. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
 ## Project Structure
 
 \`\`\`
 narcoguard/
-├── app/                  # Next.js App Router
-│   ├── api/              # API routes
-│   ├── components/       # App-specific components
-│   ├── dashboard/        # Dashboard pages
-│   ├── download/         # Download pages
-│   ├── globals.css       # Global styles
-│   └── layout.tsx        # Root layout
-├── components/           # Shared components
-│   ├── ui/               # UI components (shadcn)
-│   └── ...               # Other shared components
-├── lib/                  # Utility functions
-│   ├── utils.ts          # General utilities
-│   ├── auth.ts           # Authentication utilities
-│   ├── analytics.ts      # Analytics utilities
-│   ├── performance.ts    # Performance utilities
-│   ├── security.ts       # Security utilities
-│   └── accessibility.ts  # Accessibility utilities
-├── public/               # Static assets
-├── scripts/              # Build and setup scripts
-├── .env.local            # Environment variables (not in repo)
-├── next.config.js        # Next.js configuration
-├── package.json          # Dependencies and scripts
-├── tailwind.config.ts    # Tailwind CSS configuration
-└── tsconfig.json         # TypeScript configuration
+├── app/                    # Next.js App Router
+│   ├── api/                # API routes
+│   ├── components/         # App-specific components
+│   ├── dashboard/          # Dashboard pages
+│   ├── download/           # Download pages
+│   ├── hero-network/       # Hero Network pages
+│   ├── resources/          # Resource pages
+│   ├── layout.tsx          # Root layout
+│   └── page.tsx            # Home page
+├── components/             # Shared components
+│   ├── ui/                 # UI components (shadcn/ui)
+│   ├── feature-section.tsx # Feature section component
+│   └── ...                 # Other components
+├── lib/                    # Utility functions and services
+│   ├── analytics-service.ts # Analytics service
+│   ├── emergency-service.ts # Emergency service
+│   ├── monitoring-service.ts # Vital sign monitoring
+│   ├── user-service.ts     # User management
+│   ├── accessibility.ts    # Accessibility utilities
+│   ├── error-handling.ts   # Error handling utilities
+│   └── ...                 # Other utilities
+├── public/                 # Static assets
+├── scripts/                # Build and setup scripts
+├── .env.example            # Example environment variables
+├── next.config.js          # Next.js configuration
+├── package.json            # Dependencies and scripts
+├── tailwind.config.ts      # Tailwind CSS configuration
+└── tsconfig.json           # TypeScript configuration
 \`\`\`
 
-## Deployment
+## Core Services
 
-The application is configured for deployment on Vercel. Connect your GitHub repository to Vercel for automatic deployments.
+### Emergency Service
 
-## Performance Optimizations
+The Emergency Service is responsible for detecting and responding to potential overdose situations. It integrates with the Monitoring Service to analyze vital signs and triggers appropriate responses when dangerous patterns are detected.
 
-- Image optimization with Next.js Image component
-- Code splitting and lazy loading
-- Server-side rendering and static generation
-- Debounced and throttled event handlers
-- Memoization of expensive calculations
-- Intersection Observer for lazy loading components
+Key features:
+- Real-time vital sign analysis
+- Multi-level alerting system
+- Integration with emergency services
+- Location-based responder coordination
 
-## Accessibility
+### Monitoring Service
 
-The application follows WCAG 2.1 AA standards:
+The Monitoring Service continuously tracks and analyzes vital signs from connected devices. It uses sophisticated algorithms to detect patterns indicative of an overdose or medical emergency.
 
-- Proper heading hierarchy
-- ARIA attributes for interactive elements
-- Keyboard navigation support
-- Focus management for modals and dialogs
-- Color contrast compliance
-- Screen reader announcements
-- Reduced motion support
+Key features:
+- Real-time data processing
+- Customizable alert thresholds
+- Historical data analysis
+- Device integration
 
-## Security Measures
+### User Service
 
-- Input validation and sanitization
-- Content Security Policy
-- HTTPS enforcement
-- Protection against XSS and CSRF
-- Secure authentication flows
-- Rate limiting on API routes
-- Secure HTTP headers
+The User Service manages user accounts, profiles, and authentication. It handles user registration, login, profile management, and emergency contact configuration.
 
-## Browser Compatibility
+Key features:
+- Secure authentication
+- Profile management
+- Emergency contact management
+- Privacy controls
 
-- Chrome (latest 2 versions)
-- Firefox (latest 2 versions)
-- Safari (latest 2 versions)
-- Edge (latest 2 versions)
-- iOS Safari (latest 2 versions)
-- Android Chrome (latest 2 versions)
+### Analytics Service
+
+The Analytics Service tracks application usage, performance metrics, and emergency events to provide insights for continuous improvement.
+
+Key features:
+- Usage tracking
+- Performance monitoring
+- Emergency response analytics
+- Privacy-preserving data collection
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add some amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+We welcome contributions to Narcoguard! Please see our [Contributing Guidelines](CONTRIBUTING.md) for more information.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Contact
+## Acknowledgments
 
-For questions or support, please contact support@narcoguard.com.
-\`\`\`
-
-Let's create a cross-browser compatibility utility:
+- This project was inspired by the ongoing opioid crisis and the need for innovative solutions to prevent overdose deaths.
+- Special thanks to all the healthcare professionals, harm reduction specialists, and first responders who work tirelessly to save lives.
