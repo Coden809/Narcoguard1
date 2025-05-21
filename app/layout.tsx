@@ -23,12 +23,8 @@ export const metadata = {
   description:
     "Narcoguard helps prevent drug overdoses by monitoring vital signs and alerting emergency contacts when needed.",
   icons: {
-    icon: [
-      {
-        url: "/favicon.ico",
-        href: "/favicon.ico",
-      },
-    ],
+    icon: "/favicon.ico",
+    apple: "/apple-icon.png",
   },
   manifest: "/manifest.json",
   applicationName: "Narcoguard",
