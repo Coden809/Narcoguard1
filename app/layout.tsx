@@ -49,7 +49,7 @@ export const metadata = {
     initialScale: 1,
     maximumScale: 5,
   },
-    generator: 'v0.dev'
+  generator: "v0.dev",
 }
 
 export default function RootLayout({

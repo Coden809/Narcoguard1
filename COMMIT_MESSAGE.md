@@ -65,7 +65,7 @@ This commit implements a series of improvements to address CSS syntax errors, en
 
 Let's create a .gitignore file:
 
-```gitignore file=".gitignore"
+\`\`\`gitignore file=".gitignore"
 # dependencies
 /node_modules
 /.pnp
