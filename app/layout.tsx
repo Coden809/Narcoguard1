@@ -11,38 +11,11 @@ import { initBrowserCompatibility } from "@/lib/browser-compatibility"
 import AccessibilityControls from "@/components/accessibility-controls"
 import { RootErrorBoundary } from "@/components/root-error-boundary"
 import { initializeAccessibility } from "@/lib/accessibility"
+import { metadata } from "./metadata"
 
 const inter = Inter({ subsets: ["latin"], display: "swap" })
 
-// Update the metadata in the layout to include the new branding
-export const metadata = {
-  title: {
-    default: "Narcoguard - Overdose Prevention App",
-    template: "%s | Narcoguard",
-  },
-  description:
-    "Narcoguard helps prevent drug overdoses by monitoring vital signs and alerting emergency contacts when needed.",
-  manifest: "/manifest.json",
-  applicationName: "Narcoguard",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Narcoguard",
-  },
-  formatDetection: {
-    telephone: true,
-  },
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#1F2937" },
-  ],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-  },
-  generator: "v0.dev",
-}
+export { metadata }
 
 export default function RootLayout({
   children,
@@ -195,3 +168,7 @@ export default function RootLayout({
     </html>
   )
 }
+
+export const metadata = {
+      generator: 'v0.dev'
+    };
