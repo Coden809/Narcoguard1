@@ -11,11 +11,20 @@ import { initBrowserCompatibility } from "@/lib/browser-compatibility"
 import AccessibilityControls from "@/components/accessibility-controls"
 import { RootErrorBoundary } from "@/components/root-error-boundary"
 import { initializeAccessibility } from "@/lib/accessibility"
-import { metadata } from "./metadata"
 
 const inter = Inter({ subsets: ["latin"], display: "swap" })
 
-export { metadata }
+// Minimal metadata without favicon references
+export const metadata = {
+  title: {
+    default: "Narcoguard - Overdose Prevention App",
+    template: "%s | Narcoguard",
+  },
+  description:
+    "Narcoguard helps prevent drug overdoses by monitoring vital signs and alerting emergency contacts when needed.",
+  applicationName: "Narcoguard",
+  generator: "v0.dev",
+}
 
 export default function RootLayout({
   children,
@@ -25,6 +34,22 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
       <head>
+        {/* Explicit favicon links */}
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
+
+        {/* Meta tags */}
+        <meta name="theme-color" content="#ffffff" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <meta name="application-name" content="Narcoguard" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Narcoguard" />
+        <meta name="format-detection" content="telephone=yes" />
+
         {/* Add preconnect for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -168,7 +193,3 @@ export default function RootLayout({
     </html>
   )
 }
-
-export const metadata = {
-      generator: 'v0.dev'
-    };
