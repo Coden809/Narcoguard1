@@ -3,7 +3,6 @@
 import { motion } from "framer-motion"
 import { Shield, Heart, Zap, Watch, Users, Bell, Syringe } from "lucide-react"
 import { useEffect } from "react"
-import Image from "next/image"
 
 export default function Introduction({ speak }: { speak: (text: string) => void }) {
   useEffect(() => {
@@ -30,27 +29,13 @@ export default function Introduction({ speak }: { speak: (text: string) => void 
       className="text-white space-y-6 bg-gradient-to-br from-indigo-600/30 via-purple-600/30 to-pink-500/30 p-6 rounded-lg backdrop-blur-md border border-white/20"
     >
       <motion.h2
-        className="text-4xl md:text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-orange-400 to-amber-400"
+        className="text-4xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-orange-400 to-amber-400"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
         Welcome to Narcoguard: The Prequel to Life-Saving Innovation!
       </motion.h2>
-
-      {/* Add the hero image */}
-      <div className="relative w-full max-w-md mx-auto mb-8">
-        <Image
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ChatGPT%20Image%20Apr%201%2C%202025%2C%2005_14_06%20AM-Jsi3fp5WhwwqBkTJTUh5EDcRJxPBGd.png"
-          alt="Narcoguard Guardian"
-          width={400}
-          height={400}
-          className="rounded-lg shadow-xl"
-          priority
-        />
-      </div>
-
-      {/* Rest of the introduction content remains the same... */}
       <motion.p
         className="text-lg"
         initial={{ opacity: 0, y: -20 }}
