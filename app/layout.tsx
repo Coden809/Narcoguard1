@@ -7,7 +7,7 @@ import EmergencyFAB from "@/components/EmergencyFAB"
 import { Analytics } from "@/components/analytics"
 import { Suspense } from "react"
 import Script from "next/script"
-import { initBrowserCompatibility } from "@/lib/browser-compatibility"
+import { getBrowserCompatibilityScript } from "@/lib/browser-compatibility"
 import AccessibilityControls from "@/components/accessibility-controls"
 import { RootErrorBoundary } from "@/components/root-error-boundary"
 import { initializeAccessibility } from "@/lib/accessibility"
@@ -56,15 +56,7 @@ export default function RootLayout({
 
         {/* Add browser compatibility script with enhanced version */}
         <Script id="browser-compatibility" strategy="beforeInteractive">
-          {`
-            (function() {
-              // Initialize browser compatibility
-              ${initBrowserCompatibility.toString()}
-              
-              // Execute
-              initBrowserCompatibility();
-            })();
-          `}
+          {getBrowserCompatibilityScript()}
         </Script>
 
         {/* Initialize accessibility features */}

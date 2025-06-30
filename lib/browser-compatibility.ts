@@ -185,7 +185,7 @@ function hasAVIFSupport(): boolean {
   try {
     const img = new Image()
     img.src =
-      "data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeXhpAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgANogQEAwgMg8f8D///8WfhwB8+ErK42A="
+      "data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeHhpAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgANogQEAwgMg8f8D///8WfhwB8+ErK42A="
     return img.complete
   } catch (e) {
     console.warn("AVIF detection failed", e)
@@ -538,4 +538,289 @@ export function initBrowserCompatibility(): void {
   runAsyncFeatureDetection().then((results) => {
     console.log("Async feature detection results:", results)
   })
+}
+
+// Get complete browser compatibility script for inlining
+export function getBrowserCompatibilityScript(): string {
+  return `
+    (function() {
+      // Feature detection cache
+      const featureDetectionCache = new Map();
+
+      // Check WebP support
+      function hasWebPSupport() {
+        try {
+          const canvas = document.createElement("canvas");
+          if (canvas.getContext && canvas.getContext("2d")) {
+            return canvas.toDataURL("image/webp").indexOf("data:image/webp") === 0;
+          }
+        } catch (e) {
+          console.warn("WebP detection failed", e);
+        }
+        return false;
+      }
+
+      // Check AVIF support
+      function hasAVIFSupport() {
+        try {
+          const img = new Image();
+          img.src = "data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeHhpAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgANogQEAwgMg8f8D///8WfhwB8+ErK42A=";
+          return img.complete;
+        } catch (e) {
+          console.warn("AVIF detection failed", e);
+          return false;
+        }
+      }
+
+      // Check WebGL support
+      function hasWebGLSupport() {
+        try {
+          const canvas = document.createElement("canvas");
+          const contexts = ["webgl", "experimental-webgl", "webgl2", "experimental-webgl2"];
+          for (const name of contexts) {
+            try {
+              const context = canvas.getContext(name);
+              if (context) return true;
+            } catch (e) {}
+          }
+          return false;
+        } catch (e) {
+          console.warn("WebGL detection failed", e);
+          return false;
+        }
+      }
+
+      // Check WebRTC support
+      function hasWebRTCSupport() {
+        return (
+          typeof RTCPeerConnection !== "undefined" &&
+          typeof navigator.mediaDevices !== "undefined" &&
+          typeof navigator.mediaDevices.getUserMedia !== "undefined"
+        );
+      }
+
+      // Feature detection function
+      function supportsFeature(feature) {
+        if (featureDetectionCache.has(feature)) {
+          return featureDetectionCache.get(feature);
+        }
+
+        let supported = false;
+        switch (feature) {
+          case "IntersectionObserver":
+            supported = typeof IntersectionObserver !== "undefined";
+            break;
+          case "ResizeObserver":
+            supported = typeof ResizeObserver !== "undefined";
+            break;
+          case "MutationObserver":
+            supported = typeof MutationObserver !== "undefined";
+            break;
+          case "AbortController":
+            supported = typeof AbortController !== "undefined";
+            break;
+          case "WebP":
+            supported = hasWebPSupport();
+            break;
+          case "AVIF":
+            supported = hasAVIFSupport();
+            break;
+          case "WebGL":
+            supported = hasWebGLSupport();
+            break;
+          case "WebRTC":
+            supported = hasWebRTCSupport();
+            break;
+          case "ServiceWorker":
+            supported = "serviceWorker" in navigator;
+            break;
+          case "WebShare":
+            supported = "share" in navigator;
+            break;
+          case "Geolocation":
+            supported = "geolocation" in navigator;
+            break;
+          case "Notifications":
+            supported = "Notification" in window;
+            break;
+          case "SpeechRecognition":
+            supported = "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
+            break;
+          default:
+            supported = false;
+        }
+
+        featureDetectionCache.set(feature, supported);
+        return supported;
+      }
+
+      // Get browser info
+      function getBrowserInfo() {
+        if (typeof window === "undefined" || typeof navigator === "undefined") {
+          return {
+            name: "Unknown",
+            version: "Unknown",
+            os: "Unknown",
+            mobile: false,
+            tablet: false,
+            engine: "Unknown",
+            userAgent: "",
+          };
+        }
+
+        const userAgent = navigator.userAgent;
+        let name = "Unknown";
+        let version = "Unknown";
+        let os = "Unknown";
+        let mobile = false;
+        let tablet = false;
+        let engine = "Unknown";
+
+        // Detect browser name
+        if (userAgent.indexOf("Firefox") > -1) {
+          name = "Firefox";
+          engine = "Gecko";
+        } else if (userAgent.indexOf("Chrome") > -1) {
+          name = "Chrome";
+          engine = "Blink";
+        } else if (userAgent.indexOf("Safari") > -1) {
+          name = "Safari";
+          engine = "WebKit";
+        }
+
+        // Detect OS
+        if (userAgent.indexOf("Windows") !== -1) {
+          os = "Windows";
+        } else if (userAgent.indexOf("Mac") !== -1) {
+          os = "macOS";
+        } else if (userAgent.indexOf("Android") !== -1) {
+          os = "Android";
+          mobile = true;
+        } else if (userAgent.indexOf("Linux") !== -1) {
+          os = "Linux";
+        }
+
+        return { name, version, os, mobile, tablet, engine, userAgent };
+      }
+
+      // Apply polyfills
+      function applyPolyfills() {
+        // Polyfill for Element.prototype.closest
+        if (!Element.prototype.closest) {
+          Element.prototype.closest = function (s) {
+            let el = this;
+            do {
+              if (el.matches(s)) return el;
+              el = el.parentElement || el.parentNode;
+            } while (el !== null && el.nodeType === 1);
+            return null;
+          };
+        }
+
+        // Polyfill for Element.prototype.matches
+        if (!Element.prototype.matches) {
+          Element.prototype.matches = Element.prototype.matchesSelector ||
+            Element.prototype.mozMatchesSelector ||
+            Element.prototype.msMatchesSelector ||
+            Element.prototype.oMatchesSelector ||
+            Element.prototype.webkitMatchesSelector ||
+            function (s) {
+              const matches = (this.document || this.ownerDocument).querySelectorAll(s);
+              let i = matches.length;
+              while (--i >= 0 && matches.item(i) !== this) {}
+              return i > -1;
+            };
+        }
+
+        // Polyfill for requestAnimationFrame
+        if (!window.requestAnimationFrame) {
+          window.requestAnimationFrame = function(callback) {
+            return window.setTimeout(function() {
+              callback(Date.now());
+            }, 1000 / 60);
+          };
+        }
+
+        // Polyfill for Array.from
+        if (!Array.from) {
+          Array.from = function(arrayLike) {
+            return [].slice.call(arrayLike);
+          };
+        }
+      }
+
+      // Provide fallbacks
+      function provideFallbacks() {
+        const docEl = document.documentElement;
+
+        // WebP fallback
+        if (!supportsFeature("WebP")) {
+          docEl.classList.add("no-webp");
+        } else {
+          docEl.classList.add("webp");
+        }
+
+        // AVIF fallback
+        if (!supportsFeature("AVIF")) {
+          docEl.classList.add("no-avif");
+        } else {
+          docEl.classList.add("avif");
+        }
+
+        // Intersection Observer fallback
+        if (!supportsFeature("IntersectionObserver")) {
+          docEl.classList.add("no-intersection-observer");
+        }
+
+        // Service Worker fallback
+        if (!supportsFeature("ServiceWorker")) {
+          docEl.classList.add("no-service-worker");
+        }
+
+        // Add device-specific classes
+        const browserInfo = getBrowserInfo();
+        if (browserInfo.mobile) docEl.classList.add("is-mobile");
+        if (browserInfo.tablet) docEl.classList.add("is-tablet");
+        docEl.classList.add("browser-" + browserInfo.name.toLowerCase());
+
+        if (browserInfo.os) {
+          docEl.classList.add("os-" + browserInfo.os.toLowerCase().replace(/[\\s./]/g, "-"));
+        }
+      }
+
+      // Check minimum requirements
+      function meetsMinimumRequirements() {
+        const criticalFeatures = ["IntersectionObserver", "ResizeObserver", "MutationObserver", "AbortController"];
+        const supported = criticalFeatures.every(function(feature) {
+          return supportsFeature(feature);
+        });
+
+        const browser = getBrowserInfo();
+        if (browser.name === "Internet Explorer") {
+          return false;
+        }
+
+        return supported;
+      }
+
+      // Main initialization function
+      function initBrowserCompatibility() {
+        applyPolyfills();
+        provideFallbacks();
+
+        const compatible = meetsMinimumRequirements();
+        if (!compatible) {
+          if (typeof document !== "undefined") {
+            const warning = document.createElement("div");
+            warning.className = "browser-compatibility-warning";
+            warning.innerHTML = '<div class="browser-warning-content"><h2>Browser Compatibility Issue</h2><p>Your browser may not support all features needed for Narcoguard to function properly.</p><p>For the best experience, please use a modern browser like Chrome, Firefox, Edge, or Safari.</p></div>';
+            document.body.prepend(warning);
+          }
+        }
+      }
+
+      // Execute initialization
+      initBrowserCompatibility();
+    })();
+  `;
 }

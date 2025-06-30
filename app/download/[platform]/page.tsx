@@ -3,11 +3,11 @@ import type { Metadata } from "next"
 import DownloadPage from "@/components/download-page"
 
 type Props = {
-  params: { platform: string }
+  params: Promise<{ platform: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const platform = params.platform
+  const { platform } = await params
 
   const platformNames = {
     ios: "iOS",
@@ -26,8 +26,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default function PlatformDownloadPage({ params }: Props) {
-  const { platform } = params
+export default async function PlatformDownloadPage({ params }: Props) {
+  const { platform } = await params
 
   // Validate platform
   const validPlatforms = ["ios", "android", "windows", "mac", "linux", "web"]
