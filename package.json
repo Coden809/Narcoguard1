@@ -6,7 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:mobile": "playwright test",
+    "test:mobile:headed": "playwright test --headed",
+    "test:mobile:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:setup": "node scripts/mobile-testing-setup.js",
+    "test:coverage": "jest --coverage",
+    "lighthouse": "lighthouse http://localhost:3000 --output=html --output-path=./tests/mobile/reports/lighthouse.html",
+    "accessibility": "axe http://localhost:3000 --save ./tests/mobile/reports/accessibility.json"
   },
   "dependencies": {
     "@ai-sdk/openai": "latest",
@@ -86,9 +96,18 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@testing-library/jest-dom": "^6.1.0",
+    "@testing-library/react": "^14.1.0",
+    "@testing-library/user-event": "^14.5.0",
+    "@types/jest": "^29.5.0",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "axe-core": "^4.8.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "lighthouse": "^11.4.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
