@@ -1,66 +1,83 @@
 import { NextResponse } from "next/server"
-import { generateDownloadToken } from "@/lib/auth"
-import { getDownloadUrlForPlatform, getFallbackDownloadUrl } from "@/lib/file-handling"
+import { 
+  processDownloadRequest, 
+  detectPlatform, 
+  type DownloadRequest 
+} from "@/lib/download-service"
 import { logDownloadEvent } from "@/lib/analytics"
 import { sendDownloadEmail } from "@/lib/email"
+import { rateLimit } from "@/lib/rate-limit"
+
+// Rate limiter - 10 requests per minute per IP
+const limiter = rateLimit({
+  interval: 60 * 1000,
+  uniqueTokenPerInterval: 500,
+  limit: 10,
+})
 
 export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for") || "anonymous"
+
   try {
-    const { platform, email } = await request.json()
+    // Apply rate limiting
+    await limiter.check(10, ip)
 
-    // Validate email and platform
-    if (!email || !platform) {
-      return NextResponse.json({ success: false, message: "Email and platform are required" }, { status: 400 })
-    }
+    // Parse request body
+    const body = await request.json()
+    const { email, platform: requestedPlatform } = body
 
-    // Validate platform
-    const validPlatforms = ["ios", "android", "windows", "mac", "linux", "web", "desktop"]
-    if (!validPlatforms.includes(platform)) {
-      return NextResponse.json({ success: false, message: "Invalid platform specified" }, { status: 400 })
-    }
-
-    // Generate secure download token that expires in 24 hours
-    const downloadToken = generateDownloadToken(email, platform)
-
-    // Get user agent for platform-specific downloads
+    // Get user agent and detect platform if not specified
     const userAgent = request.headers.get("user-agent") || ""
+    const detectedPlatform = detectPlatform(userAgent)
+    const platform = requestedPlatform || detectedPlatform
 
-    // Get the appropriate download URL
-    const downloadUrl = getDownloadUrlForPlatform(platform, userAgent)
-    const fallbackUrl = getFallbackDownloadUrl(platform)
-
-    // Add token to URL if not an external URL (like App Store)
-    const finalDownloadUrl =
-      downloadUrl.includes("http") && !downloadUrl.includes(process.env.NEXT_PUBLIC_APP_URL || "")
-        ? downloadUrl
-        : `${downloadUrl}?token=${downloadToken}`
-
-    const finalFallbackUrl =
-      fallbackUrl.includes("http") && !fallbackUrl.includes(process.env.NEXT_PUBLIC_APP_URL || "")
-        ? fallbackUrl
-        : `${fallbackUrl}?token=${downloadToken}`
-
-    // Map platform to file name
-    const platformMap: Record<string, { fileName: string; displayName: string }> = {
-      android: { fileName: "narcoguard-latest.apk", displayName: "Android" },
-      windows: { fileName: "narcoguard-setup.exe", displayName: "Windows" },
-      mac: { fileName: "narcoguard.dmg", displayName: "macOS" },
-      linux: { fileName: "narcoguard.AppImage", displayName: "Linux" },
-      ios: { fileName: "", displayName: "iOS" },
-      web: { fileName: "", displayName: "Web App" },
-      desktop: { fileName: "", displayName: "Desktop" },
+    // Create download request
+    const downloadRequest: DownloadRequest = {
+      email,
+      platform,
+      userAgent,
+      deviceInfo: {
+        os: detectedPlatform,
+        browser: getBrowserFromUserAgent(userAgent),
+        version: getVersionFromUserAgent(userAgent),
+        mobile: isMobileDevice(userAgent)
+      }
     }
 
-    // Get platform-specific info
-    const platformInfo = platformMap[platform] || { fileName: "narcoguard.zip", displayName: "Generic" }
+    // Process the download request
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://narcoguard.com"
+    const response = await processDownloadRequest(downloadRequest, baseUrl)
 
-    // Track download event in analytics
-    await logDownloadEvent(platform, 0, "email", email, userAgent)
+    if (!response.success) {
+      return NextResponse.json({
+        success: false,
+        message: response.error || "Failed to generate download link"
+      }, { status: 400 })
+    }
 
-    // Send email with download link
+    // Log download event
     try {
-      await sendDownloadEmail(email, finalDownloadUrl, platform, finalFallbackUrl)
-      console.log(`Download email sent to ${email} for ${platform}`)
+      await logDownloadEvent(
+        platform,
+        0, // File size unknown at this point
+        response.downloadUrl.includes('app.') ? 'store' : 'direct',
+        email,
+        userAgent
+      )
+    } catch (error) {
+      console.error("Failed to log download event:", error)
+      // Continue even if logging fails
+    }
+
+    // Send download email
+    try {
+      await sendDownloadEmail(
+        email,
+        response.downloadUrl,
+        platform,
+        response.fallbackUrl,
+        response.instructions
+      )
     } catch (error) {
       console.error("Failed to send download email:", error)
       // Continue even if email fails
@@ -68,14 +85,65 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Download link generated for ${platformInfo.displayName}`,
-      downloadUrl: finalDownloadUrl,
-      fallbackUrl: finalFallbackUrl,
-      fileName: platformInfo.fileName,
-      platform: platformInfo.displayName,
+      message: `Download link generated for ${response.platform}`,
+      data: {
+        downloadUrl: response.downloadUrl,
+        fallbackUrl: response.fallbackUrl,
+        fileName: response.fileName,
+        platform: response.platform,
+        expiresAt: response.expiresAt.toISOString(),
+        instructions: response.instructions
+      }
     })
+
   } catch (error) {
-    console.error("Download request error:", error)
-    return NextResponse.json({ success: false, message: "Failed to process download request" }, { status: 500 })
+    console.error("Download generation error:", error)
+
+    // Handle rate limiting
+    if (error.message === "Rate limit exceeded") {
+      return NextResponse.json({
+        success: false,
+        message: "Too many download requests. Please try again later."
+      }, { status: 429 })
+    }
+
+    return NextResponse.json({
+      success: false,
+      message: "Failed to process download request"
+    }, { status: 500 })
   }
+}
+
+// Helper functions
+function getBrowserFromUserAgent(userAgent: string): string {
+  const ua = userAgent.toLowerCase()
+  
+  if (ua.includes('chrome') && !ua.includes('edge')) return 'chrome'
+  if (ua.includes('firefox')) return 'firefox'
+  if (ua.includes('safari') && !ua.includes('chrome')) return 'safari'
+  if (ua.includes('edge')) return 'edge'
+  if (ua.includes('opera')) return 'opera'
+  
+  return 'unknown'
+}
+
+function getVersionFromUserAgent(userAgent: string): string {
+  const ua = userAgent.toLowerCase()
+  
+  // Extract version numbers (simplified)
+  const chromeMatch = ua.match(/chrome\/(\d+)/)
+  if (chromeMatch) return chromeMatch[1]
+  
+  const firefoxMatch = ua.match(/firefox\/(\d+)/)
+  if (firefoxMatch) return firefoxMatch[1]
+  
+  const safariMatch = ua.match(/version\/(\d+)/)
+  if (safariMatch) return safariMatch[1]
+  
+  return 'unknown'
+}
+
+function isMobileDevice(userAgent: string): boolean {
+  const ua = userAgent.toLowerCase()
+  return /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua)
 }
